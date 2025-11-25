@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binance Spot Trading Live Prices</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        input:focus {
+            outline: 2px solid #f0b90b;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #f0b90b;
+            color: #1e2026;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #f8d33a;
+            transform: translateY(-2px);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #f0b90b;
+        }
+        
+        .prices-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .price-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .price-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .pair-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #f0b90b;
+        }
+        
+        .change {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .positive {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+        
+        .negative {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+        }
+        
+        .volume {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .last-updated {
+            text-align: center;
+            margin-top: 30px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .prices-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Binance Spot Trading Live Prices</h1>
+            <p class="description">Track real-time cryptocurrency prices from Binance spot trading. Prices update automatically every 10 seconds.</p>
+        </header>
+        
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search trading pairs (e.g., BTC, ETH, BNB)">
+            </div>
+            <div class="filter-buttons">
+                <button id="showAll">All Pairs</button>
+                <button id="showUSDT">USDT Pairs</button>
+                <button id="showBUSD">BUSD Pairs</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Pairs</div>
+                <div class="stat-value" id="totalPairs">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">24h Volume</div>
+                <div class="stat-value" id="totalVolume">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Updated</div>
+                <div class="stat-value" id="lastUpdate">-</div>
+            </div>
+        </div>
+        
+        <div class="prices-container" id="pricesContainer">
+            <div class="loading">Loading live prices...</div>
+        </div>
+        
+        <div class="last-updated">
+            Data provided by Binance API | Updates every 10 seconds
+        </div>
+    </div>
+
+    <script>
+        // Binance API endpoint for ticker prices
+        const BINANCE_API_URL = 'https://api.binance.com/api/v3/ticker/24hr';
+        
+        // DOM elements
+        const pricesContainer = document.getElementById('pricesContainer');
+        const searchInput = document.getElementById('searchInput');
+        const showAllBtn = document.getElementById('showAll');
+        const showUSDTBtn = document.getElementById('showUSDT');
+        const showBUSDBtn = document.getElementById('showBUSD');
+        const totalPairsEl = document.getElementById('totalPairs');
+        const totalVolumeEl = document.getElementById('totalVolume');
+        const lastUpdateEl = document.getElementById('lastUpdate');
+        
+        // State variables
+        let allTradingPairs = [];
+        let filteredPairs = [];
+        let currentFilter = 'all';
+        
+        // Fetch data from Binance API
+        async function fetchPrices() {
+            try {
+                const response = await fetch(BINANCE_API_URL);
+                const data = await response.json();
+                
+                // Filter only spot trading pairs and sort by volume
+                allTradingPairs = data
+                    .filter(pair => pair.symbol.endsWith('USDT') || 
+                                   pair.symbol.endsWith('BUSD') || 
+                                   pair.symbol.endsWith('BTC') || 
+                                   pair.symbol.endsWith('ETH'))
+                    .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume));
+                
+                applyFilter(currentFilter);
+                updateStats();
+                updateLastUpdated();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                pricesContainer.innerHTML = '<div class="loading">Error loading data. Please try again later.</div>';
+            }
+        }
+        
+        // Apply filter to trading pairs
+        function applyFilter(filter) {
+            currentFilter = filter;
+            
+            switch(filter) {
+                case 'usdt':
+                    filteredPairs = allTradingPairs.filter(pair => pair.symbol.endsWith('USDT'));
+                    break;
+                case 'busd':
+                    filteredPairs = allTradingPairs.filter(pair => pair.symbol.endsWith('BUSD'));
+                    break;
+                default:
+                    filteredPairs = allTradingPairs;
+            }
+            
+            renderPrices();
+        }
+        
+        // Render prices to the DOM
+        function renderPrices() {
+            if (filteredPairs.length === 0) {
+                pricesContainer.innerHTML = '<div class="loading">No trading pairs found.</div>';
+                return;
+            }
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            // Apply search filter
+            let displayPairs = filteredPairs;
+            if (searchTerm) {
+                displayPairs = filteredPairs.filter(pair => 
+                    pair.symbol.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Limit to top 100 pairs for performance
+            displayPairs = displayPairs.slice(0, 100);
+            
+            pricesContainer.innerHTML = '';
+            
+            displayPairs.forEach(pair => {
+                const priceChangePercent = parseFloat(pair.priceChangePercent);
+                const isPositive = priceChangePercent >= 0;
+                
+                const priceCard = document.createElement('div');
+                priceCard.className = 'price-card';
+                priceCard.innerHTML = `
+                    <div class="pair-name">
+                        <span>${pair.symbol}</span>
+                        <span class="change ${isPositive ? 'positive' : 'negative'}">
+                            ${isPositive ? '+' : ''}${priceChangePercent.toFixed(2)}%
+                        </span>
+                    </div>
+                    <div class="price">${parseFloat(pair.lastPrice).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 8
+                    })}</div>
+                    <div class="volume">
+                        24h Volume: ${parseFloat(pair.quoteVolume).toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })} USDT
+                    </div>
+                `;
+                
+                pricesContainer.appendChild(priceCard);
+            });
+        }
+        
+        // Update statistics
+        function updateStats() {
+            totalPairsEl.textContent = allTradingPairs.length.toLocaleString();
+            
+            const totalVolume = allTradingPairs.reduce((sum, pair) => {
+                return sum + parseFloat(pair.quoteVolume);
+            }, 0);
+            
+            totalVolumeEl.textContent = `${(totalVolume / 1000000).toFixed(2)}M`;
+        }
+        
+        // Update last updated time
+        function updateLastUpdated() {
+            const now = new Date();
+            lastUpdateEl.textContent = now.toLocaleTimeString();
+        }
+        
+        // Event listeners
+        searchInput.addEventListener('input', renderPrices);
+        
+        showAllBtn.addEventListener('click', () => {
+            applyFilter('all');
+        });
+        
+        showUSDTBtn.addEventListener('click', () => {
+            applyFilter('usdt');
+        });
+        
+        showBUSDBtn.addEventListener('click', () => {
+            applyFilter('busd');
+        });
+        
+        // Initial fetch and set up interval
+        fetchPrices();
+        setInterval(fetchPrices, 10000); // Update every 10 seconds
+    </script>
+</body>
+</html>
